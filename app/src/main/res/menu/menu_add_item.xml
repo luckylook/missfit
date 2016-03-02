@@ -1,0 +1,9 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.example.arono.missfit.Activities.AddItemActivity">
+    <item android:id="@+id/rotateId" android:title="rotate"
+        android:orderInCategory="200"
+        app:showAsAction="ifRoom"
+        android:icon="@drawable/rotate"/>
+</menu>
