@@ -1,6 +1,7 @@
 package com.example.arono.missfit;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import com.example.arono.missfit.DataServerManagement.DataManager;
+
 
 import java.util.ArrayList;
 
@@ -24,13 +28,15 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
     LayoutInflater inflater;
     ArrayList filteredData;
     ArrayList<Item> allData;
-    public ImageAdapter(Context c,ArrayList data){
+    DataManager dataManager;
+
+/*    public ImageAdapter(Context c,ArrayList data){
         this.context = c;
-        //inflater = (LayoutInflater) c.getSystemService(c.LAYOUT_INFLATER_SERVICE);
         this.allData = data;
-    }
+    }*/
     public ImageAdapter(Context c){
         this.context = c;
+        dataManager = new DataManager();
     }
     public int getCount() {
         return filteredData.size();
@@ -54,19 +60,26 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
         inflater = (LayoutInflater) context.getSystemService(context.LAYOUT_INFLATER_SERVICE);
-        RelativeLayout  row = (RelativeLayout)inflater.inflate(R.layout.single_row,viewGroup,false);
+        RelativeLayout  row = (RelativeLayout)inflater.inflate(R.layout.single_row, viewGroup, false);
+
         TextView tvName = (TextView)row.findViewById(R.id.itemName);
         TextView tvPrice = (TextView)row.findViewById(R.id.itemPrice);
         ImageView imageView = (ImageView)row.findViewById(R.id.imageView);
-        Item item = allData.get(i);
-        tvName.setText(item.getName());
-        tvPrice.setText(""+item.getPrice());
-        //imageView.setImageResource(R.drawable.im1);
-       // imageView.setImageBitmap(item.getPicture()[0]);
-       ImageDownload downloadTask = new ImageDownload(item.getPhotoOne(),imageView,(ProgressBar)row.getChildAt(1));
-       downloadTask.execute();
+        final ProgressBar progressBar = (ProgressBar) row.getChildAt(1);
+        Item item = null;
+        if(allData.size() != 0 ) {
+            item = allData.get(i);
+
+            tvName.setText(item.getName());
+            tvPrice.setText("" + item.getPrice());
+            progressBar.setVisibility(View.VISIBLE);
+
+            dataManager.downloadImageFromServer(context, item, imageView, progressBar);
+        }
         return row;
     }
+
+
 
     @Override
     public Filter getFilter() {
@@ -95,4 +108,8 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
             }
         };
     }
+
+
 }
+
+

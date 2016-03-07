@@ -3,23 +3,30 @@ package com.example.arono.missfit.Activities;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
 import android.widget.ListPopupWindow;
+import android.widget.PopupWindow;
+import android.widget.ProgressBar;
 import android.widget.SearchView;
 
+import com.backendless.Backendless;
 import com.backendless.exceptions.BackendlessException;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 import com.example.arono.missfit.Drawer.BaseActivityWithNavigationDrawer;
@@ -34,18 +41,25 @@ import java.util.ArrayList;
 
 public class FeedActivity extends BaseActivityWithNavigationDrawer {
 
+    public static final int SIZE = 4;
+    public static final String TOPS = "TOPS";
+    public static final String BOTTOMS = "BOTTOMS";
+    public static final String SHOES = "SHOES";
+    public static final String CUSTOM = "CUSTOM";
     ViewPager viewPager = null;
     TabAdapter tabAdapter;
     SlidingTabLayout tabs;
     SearchView searchView;
-    ImageAdapter imageAdapter;
+    ImageAdapter[] imageAdapter;
     FrameLayout contentFrame;
     LayoutInflater inflater;
+    DataManager dataManager;
     ArrayList<Item> itemArrayList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
 
         contentFrame = getContentFrame();
         inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -53,19 +67,39 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer {
         View view = inflater.inflate(R.layout.activity_feed, null, false);
         contentFrame.addView(view);
 
-        imageAdapter = new ImageAdapter(getApplicationContext());
+        final View popUp = inflater.inflate(R.layout.pop_up_progress_bar, null, false);
+        final ProgressBar progressBar = (ProgressBar) popUp.findViewById(R.id.popUpProgressBar);
+        contentFrame.addView(popUp);
+
+
+        new Handler().postDelayed(new Runnable() {
+
+            @Override
+            public void run() {
+                progressBar.setVisibility(View.INVISIBLE);
+                contentFrame.removeView(popUp);
+            }
+
+        }, 2000L);
+
+        imageAdapter = new ImageAdapter[SIZE];
+        for(int i = 0 ; i < SIZE ; i++)
+            imageAdapter[i] = new ImageAdapter(getApplicationContext());
+
         viewPager = (ViewPager) findViewById(R.id.viewPager);
 
         itemArrayList = (ArrayList<Item>) getIntent().getSerializableExtra("itemArray");
-
+        dataManager = new DataManager();
+        dataManager.setItems(itemArrayList);
+        dataManager.orderingItemsByCategory(dataManager.getItems());
+        
         FragmentManager fm = getSupportFragmentManager();
-        tabAdapter = new TabAdapter(fm,imageAdapter,itemArrayList);
+        tabAdapter = new TabAdapter(fm,imageAdapter,dataManager);
         viewPager.setAdapter(tabAdapter);
         tabs = (SlidingTabLayout)findViewById(R.id.tabs);
         tabs.setViewPager(viewPager);
 
         Log.e("FeedActivity", "FeedActivity");
-
 
 
     }
@@ -87,8 +121,8 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer {
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                viewPager.setCurrentItem(tabAdapter.SIZE-1);
-                imageAdapter.getFilter().filter(newText);
+                viewPager.setCurrentItem(FeedActivity.SIZE-1);
+                imageAdapter[0].getFilter().filter(newText);
                 return false;
             }
         });
@@ -149,39 +183,38 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer {
 
 class TabAdapter extends FragmentStatePagerAdapter {
 
-    public static final int SIZE = 4;
-    FragmentCategory fragmentCategory;
-    ImageAdapter im;
-    ArrayList<Item> itemArrayList;
 
-    public TabAdapter(FragmentManager fm,ImageAdapter imageAdapter,ArrayList<Item> itemArrayList) {
+    FragmentCategory fragmentCategory;
+    ImageAdapter[] im;
+    DataManager dataManager;
+
+    public TabAdapter(FragmentManager fm,ImageAdapter[] imageAdapter,DataManager dataManager) {
         super(fm);
         im = imageAdapter;
-        this.itemArrayList = itemArrayList;
+        this.dataManager = dataManager;
     }
 
     @Override
     public Fragment getItem(int position) {
-        fragmentCategory = FragmentCategory.getInstace(position, im,itemArrayList);
+        fragmentCategory = FragmentCategory.getInstace(position, im[position],dataManager);
         return fragmentCategory;
     }
 
     @Override
     public int getCount() {
-        return SIZE;
+        return FeedActivity.SIZE;
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
         switch(position){
-            case 0: return "TOPS";
-            case 1: return "BOTTOMS";
-            case 2: return "SHOES";
-            case 3: return "CUSTOM";
+            case 0: return FeedActivity.TOPS;
+            case 1: return FeedActivity.BOTTOMS;
+            case 2: return FeedActivity.SHOES;
+            case 3: return FeedActivity.CUSTOM;
         }
         return null;
     }
-
 }
 
 

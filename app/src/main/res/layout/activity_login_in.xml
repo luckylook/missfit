@@ -3,6 +3,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#ffcc00"
+    android:id="@+id/ll"
     tools:context="com.example.arono.missfit.LoginIn.LoginInActivity">
 
 <TextView

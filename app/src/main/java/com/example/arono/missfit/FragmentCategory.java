@@ -2,9 +2,6 @@ package com.example.arono.missfit;
 
 
 import android.content.Intent;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -16,10 +13,9 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import com.backendless.exceptions.BackendlessException;
+import com.example.arono.missfit.Activities.FeedActivity;
 import com.example.arono.missfit.Activities.MyItemsActivity;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 
@@ -36,36 +32,39 @@ public class FragmentCategory extends Fragment {
     DisplayMetrics displayMetrics;
     public ImageAdapter imageAdapter;
     RelativeLayout.LayoutParams relativeLayoutParams;
-    int flDimension;
-    int position;
+    int flDimension,position;
     DataManager dataManager;
-    ArrayList<Item> itemArray;
-    String s ="";
+    ArrayList<Item> itemsArray;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         Bundle bundle = getArguments();
-        relativeLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        relativeLayoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
+                RelativeLayout.LayoutParams.MATCH_PARENT);
+        
         View layout = null;
-
-        if(bundle != null){
-            position = bundle.getInt("position");
-            switch(position){
-                case 0: layout = inflater.inflate(R.layout.fragment_tops, container, false);
-                    break;
-                case 1: layout = inflater.inflate(R.layout.fragment_bottom, container, false);
-                    break;
-                case 2: layout = inflater.inflate(R.layout.fragment_shoes, container, false);
-                    break;
-                case 3: layout = inflater.inflate(R.layout.fragment_custom, container, false);
-                    break;
+        try {
+            if (bundle != null) {
+                position = bundle.getInt("position");
+                switch (position) {
+                    case 0:
+                        layout = inflater.inflate(R.layout.fragment_tops, container, false);
+                        break;
+                    case 1:
+                        layout = inflater.inflate(R.layout.fragment_bottom, container, false);
+                        break;
+                    case 2:
+                        layout = inflater.inflate(R.layout.fragment_shoes, container, false);
+                        break;
+                    case 3:
+                        layout = inflater.inflate(R.layout.fragment_custom, container, false);
+                        break;
+                }
             }
+        }catch(NullPointerException e){
+            e.printStackTrace();
         }
-
-
-
-
 
         return layout;
     }
@@ -82,24 +81,23 @@ public class FragmentCategory extends Fragment {
         super.onActivityCreated(savedInstanceState);
         Log.e("OnActivityCreated:", "Here");
 
-        Log.e("After", "after");
-
+        
         switch (position) {
             case 0: rl = (RelativeLayout)getActivity().findViewById(R.id.rl1);
+                init(dataManager.getItemsTops());
                 break;
             case 1: rl = (RelativeLayout)getActivity().findViewById(R.id.rl2);
+                init(dataManager.getItemsBottoms());
                 break;
             case 2: rl = (RelativeLayout)getActivity().findViewById(R.id.rl3);
+                init(dataManager.getItemShoes());
                 break;
             case 3: rl = (RelativeLayout)getActivity().findViewById(R.id.rl4);
+                init(dataManager.getItemsCustom());
                 break;
         }
 
-        init(itemArray);
-
         gridViewSelectedItems();
-
-
 
 
     }
@@ -121,14 +119,13 @@ public class FragmentCategory extends Fragment {
         return (int) (heightPixels * FLHEIGHT);
     }
 
-    public static FragmentCategory getInstace(int position,ImageAdapter imageAdapter,ArrayList<Item> itemArrayList){
+    public static FragmentCategory getInstace(int position,ImageAdapter imageAdapter,DataManager dataManger){
         FragmentCategory FragmentCategory = new FragmentCategory();
         FragmentCategory.imageAdapter = imageAdapter;
-        FragmentCategory.itemArray = itemArrayList;
-        Log.e("ErrorFrag",itemArrayList.get(0).getName());
+        FragmentCategory.dataManager = dataManger;
+        
         Bundle bundle = new Bundle();
         bundle.putInt("position",position);
-        //bundle.putSerializable("imageAdapter",im);
         FragmentCategory.setArguments(bundle);
         return FragmentCategory;
     }
@@ -145,12 +142,5 @@ public class FragmentCategory extends Fragment {
         rl.addView(frameLayoutChild, flLayoutParams);
     }
 
-    public Item initItems(Item item){
-        Resources res = getContext().getResources();
-        Bitmap b[] = new Bitmap[1];
-        b[0] = BitmapFactory.decodeResource(res,R.drawable.im1);
-        item.setItem("stam", 200, "Tops", null, Item.Size.LARGE);
-        item.setPicture(b);
-        return item;
-    }
+
 }

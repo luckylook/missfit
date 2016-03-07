@@ -12,7 +12,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 
 import com.backendless.exceptions.BackendlessException;
-import com.example.arono.missfit.Activities.FeedActivity;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 import com.example.arono.missfit.Item;
 import com.example.arono.missfit.R;
@@ -31,8 +30,9 @@ public class LoadItemsActivity extends AppCompatActivity {
         Log.e("error","hereLoadSomeItem");
         progressBar = (ProgressBar) findViewById(R.id.progressId);
         dataManager = new DataManager();
-        Stam s = new Stam(dataManager,this,progressBar);
-        s.execute();
+        LoadAllItemAsyncTask loadAllItemAsyncTask = new LoadAllItemAsyncTask(dataManager,this,progressBar);
+        loadAllItemAsyncTask.execute();
+
 
     }
 
@@ -58,7 +58,7 @@ public class LoadItemsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    class Stam extends AsyncTask{
+    class LoadAllItemAsyncTask extends AsyncTask{
 
         private ProgressBar progressBar;
         private DataManager dataManager;
@@ -66,7 +66,8 @@ public class LoadItemsActivity extends AppCompatActivity {
         private boolean flag = false;
         private ArrayList<Item> itemArrayList;
 
-        public Stam(DataManager dataManager,Context c,ProgressBar progressBar){
+
+        public LoadAllItemAsyncTask(DataManager dataManager, Context c, ProgressBar progressBar){
             this.c = c;
             this.progressBar = progressBar;
             this.dataManager = dataManager;
@@ -78,23 +79,27 @@ public class LoadItemsActivity extends AppCompatActivity {
                 @Override
 
                 public void done(ArrayList<Item> value, BackendlessException e) {
-                    Log.e("Stam", "Stam");
                     itemArrayList = value;
-                    for(int i = 0 ; i < 10 ; i++){
-                        itemArrayList.add(value.get(1));
-                    }
                     flag = true;
-                    onPostExecute(flag);
+                    Log.e("Error","finish load all the items");
                 }
             });
+            try {
+                Thread.sleep(3000);
+                Log.e("Error", "sleep");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
             return null;
         }
+
 
         @Override
         protected void onPostExecute(Object o) {
             if(flag) {
                 progressBar.setVisibility(View.INVISIBLE);
+                dataManager.setItems(itemArrayList);
                 Intent feedIntent = new Intent(c,FeedActivity.class);
                 feedIntent.putExtra("itemArray",itemArrayList);
                 startActivity(feedIntent);

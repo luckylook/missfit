@@ -24,22 +24,24 @@ public class LoginInActivity extends AppCompatActivity {
 
     private EditText etEmail,etPassword;
     private TextView tvSignIn;
-    private Button btnSignIn;
+    private Button btnLogIn;
     Context c = this;
     AsyncCallback<BackendlessUser> callback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_login_in);
+
         Backendless.initApp(this, BackendUtility.APPLIATION_ID, BackendUtility.APPLIATION_Key, BackendUtility.VERSION);
 
         etEmail = (EditText) findViewById(R.id.etEmail);
         etPassword = (EditText) findViewById(R.id.etPaswword);
-        btnSignIn = (Button) findViewById(R.id.btnLogIn);
+        btnLogIn = (Button) findViewById(R.id.btnLogIn);
         tvSignIn = (TextView) findViewById(R.id.tvSignIn);
 
 
-        btnSignIn.setOnClickListener(new View.OnClickListener() {
+        btnLogIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
@@ -49,10 +51,13 @@ public class LoginInActivity extends AppCompatActivity {
         tvSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent signInInetnt = new Intent(c,SignInActivity.class);
+                Intent signInInetnt = new Intent(c, SignUpActivity.class);
                 startActivity(signInInetnt);
             }
         });
+
+
+
     }
 
 
@@ -70,22 +75,6 @@ public class LoginInActivity extends AppCompatActivity {
             }
         },true);
 
-       /* callback =  new AsyncCallback<BackendlessUser>() {
-            @Override
-            public void handleResponse(BackendlessUser backendlessUser) {
-                Log.e("Email", Backendless.UserService.CurrentUser().getEmail());
-                Log.e("Password", Backendless.UserService.CurrentUser().getPassword());
-                startActivity(new Intent(c,FeedActivity.class));
-            }
-
-            @Override
-            public void handleFault(BackendlessFault backendlessFault) {
-                Log.e("Error" , backendlessFault.getMessage());
-            }
-        };
-
-        Backendless.UserService.login(etEmail.getText().toString(),
-                etPassword.getText().toString(), callback, true);*/
 
 
         // Store values at the time of the login attempt.

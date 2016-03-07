@@ -1,6 +1,9 @@
 package com.example.arono.missfit.Activities;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -15,6 +18,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
@@ -24,6 +28,8 @@ import com.example.arono.missfit.Drawer.BaseActivityWithNavigationDrawer;
 import com.example.arono.missfit.Item;
 import com.example.arono.missfit.Picture;
 import com.example.arono.missfit.R;
+
+import java.util.Random;
 
 
 public class AddItemActivity extends BaseActivityWithNavigationDrawer implements View.OnClickListener{
@@ -117,22 +123,47 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
                 Item item = new Item();
                 item.setItem(description, price, type, user, size);
 
-                /*String[] photos = new String[3];
-                photos[0] = dataManager.uploadPicture(ivFirstPic,3);
-                photos[1] = dataManager.uploadPicture(ivSecPic,4);
-                photos[2] = dataManager.uploadPicture(ivThirdtPic,5);
+                String[] photos = new String[3];
+                Random random = new Random();
+                int num = random.nextInt(10000);
+
+                photos[0] = dataManager.uploadPicture(ivFirstPic,num,description+1);
+                photos[1] = dataManager.uploadPicture(ivSecPic,num,description+2);
+                photos[2] = dataManager.uploadPicture(ivThirdtPic,num,description+3);
 
 
                 item.setPhotoOne(photos[0]);
                 item.setPhotoTwo(photos[1]);
                 item.setPhotoThird(photos[2]);
-                dataManager.uploadToServer(item);*/
-                dataManager.getSpecificUserItems(user);
+
+                dataManager.uploadToServer(item, getApplicationContext());
+                uploadAnotherItemAlertDialog();
 
             }
         });
     }
 
+    public void uploadAnotherItemAlertDialog(){
+        AlertDialog.Builder finishUploadAlert = new AlertDialog.Builder(this);
+        finishUploadAlert.setTitle("Finish Upload").setMessage("Do you want to upload another Item?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                ivFirstPic.setImageResource(R.drawable.add3);
+                ivSecPic.setImageResource(R.drawable.add3);
+                ivThirdtPic.setImageResource(R.drawable.add3);
+                etDescription.setText("");
+                etPrice.setText("");
+
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        AlertDialog alertDialog1 = finishUploadAlert.create();
+        alertDialog1.show();
+    }
 
     public void checkBoxEnable(){
         checkBoxIvFirst.setOnClickListener(new View.OnClickListener() {

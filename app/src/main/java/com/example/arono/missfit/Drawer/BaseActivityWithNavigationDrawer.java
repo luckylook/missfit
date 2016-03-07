@@ -1,21 +1,31 @@
 package com.example.arono.missfit.Drawer;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.ListView;
+
+import com.backendless.Backendless;
+import com.backendless.BackendlessUser;
+import com.backendless.exceptions.BackendlessException;
 import com.example.arono.missfit.Activities.AddItemActivity;
+import com.example.arono.missfit.Activities.FeedActivity;
 import com.example.arono.missfit.Activities.MyItemsActivity;
 import com.example.arono.missfit.Activities.ProfileActivity;
 import com.example.arono.missfit.Activities.LoadItemsActivity;
+import com.example.arono.missfit.DataServerManagement.DataManager;
+import com.example.arono.missfit.Item;
 import com.example.arono.missfit.R;
 import com.example.arono.missfit.Activities.ShoppingCartActivity;
 
@@ -30,6 +40,7 @@ public class BaseActivityWithNavigationDrawer extends AppCompatActivity {
         ActionBarDrawerToggle drawerToggle;
         ArrayList<DrawerItem> drawerItem;
         FrameLayout contentFrame;
+
 
         @Override
         protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +108,7 @@ public class BaseActivityWithNavigationDrawer extends AppCompatActivity {
             Intent intent = null;
             switch(position){
                 case 0:  intent = new Intent(this, LoadItemsActivity.class);
+                    intent.putExtra("STOP",false);
                     break;
                 case 1:  intent = new Intent(this, ProfileActivity.class);
                     intent.putExtra("title", drawerItem.get(position).getName());
@@ -106,7 +118,7 @@ public class BaseActivityWithNavigationDrawer extends AppCompatActivity {
                     break;
                 case 3:  intent = new Intent(this, MyItemsActivity.class);
                     intent.putExtra("title", drawerItem.get(position).getName());
-                    break;
+                     break;
                 case 4:  intent = new Intent(this, ShoppingCartActivity.class);
                     intent.putExtra("title", drawerItem.get(position).getName());
                     break;
@@ -120,5 +132,10 @@ public class BaseActivityWithNavigationDrawer extends AppCompatActivity {
     }
 
 }
+
+
+
+
+
 
 
