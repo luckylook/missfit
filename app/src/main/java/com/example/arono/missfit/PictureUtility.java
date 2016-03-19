@@ -21,12 +21,12 @@ import java.net.URLConnection;
 /**
  * Created by arono on 21/02/2016.
  */
-public class Picture {
+public class PictureUtility {
 
     public static final int ORIENTATION_ROTATE_90 = 90;
     private Context context;
 
-    public Picture(Context context){
+    public PictureUtility(Context context){
         this.context = context;
     }
 

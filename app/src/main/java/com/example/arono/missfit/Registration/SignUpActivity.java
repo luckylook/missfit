@@ -1,11 +1,10 @@
-package com.example.arono.missfit.LoginIn;
+package com.example.arono.missfit.Registration;
 
 import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.backendless.async.callback.BackendlessCallback;
-import com.example.arono.missfit.DataServerManagement.BackendUtility;
 import com.example.arono.missfit.R;
 import android.content.Intent;
 import android.util.Log;

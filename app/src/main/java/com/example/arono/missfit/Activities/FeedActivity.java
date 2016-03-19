@@ -148,7 +148,7 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
             @Override
             public boolean onQueryTextChange(String newText) {
                 viewPager.setCurrentItem(FeedActivity.SIZE-1);
-                imageAdapter[0].getFilter().filter(newText);
+                imageAdapter[3].getFilter().filter(newText);
                 return false;
             }
         });
@@ -257,8 +257,6 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
             viewPager.setAdapter(tabAdapter);
             tabs.setViewPager(viewPager);
         }
-
-
     }
 
         public void setListener(FetchDataListener listener) {

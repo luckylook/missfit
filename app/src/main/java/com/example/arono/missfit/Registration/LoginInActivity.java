@@ -1,4 +1,4 @@
-package com.example.arono.missfit.LoginIn;
+package com.example.arono.missfit.Registration;
 
 import android.content.Context;
 import android.content.Intent;

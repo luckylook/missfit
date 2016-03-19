@@ -19,7 +19,7 @@ import com.backendless.files.BackendlessFile;
 import com.backendless.persistence.BackendlessDataQuery;
 import com.example.arono.missfit.Activities.FeedActivity;
 import com.example.arono.missfit.Item;
-import com.example.arono.missfit.Picture;
+import com.example.arono.missfit.PictureUtility;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -95,6 +95,7 @@ public class DataManager {
             return;
         }
         final BackendlessDataQuery query = new BackendlessDataQuery();
+        query.setPageSize(30);
         Backendless.Persistence.of(Item.class).find(query, new AsyncCallback<BackendlessCollection<Item>>() {
 
 
@@ -112,6 +113,7 @@ public class DataManager {
             }
         });
     }
+
 
     public void getSpecificUserItems(BackendlessUser user,final GetAllCallback callback){
         BackendlessDataQuery query = new BackendlessDataQuery();
@@ -139,8 +141,8 @@ public class DataManager {
             public void onSuccess() {
                 progressBar.setVisibility(View.INVISIBLE);
                 Bitmap src = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
-                Picture picture = new Picture(context);
-                imageView.setImageBitmap(picture.cropCenter(src));
+                PictureUtility pictureUtility = new PictureUtility(context);
+                imageView.setImageBitmap(pictureUtility.cropCenter(src));
             }
 
             @Override

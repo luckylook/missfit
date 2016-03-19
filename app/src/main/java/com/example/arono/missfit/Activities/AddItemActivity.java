@@ -1,22 +1,17 @@
 package com.example.arono.missfit.Activities;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.MediaStore;
-import android.provider.Settings;
-import android.support.annotation.UiThread;
 import android.support.v7.app.ActionBar;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -35,20 +30,14 @@ import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
-import com.example.arono.missfit.DataServerManagement.BackendUtility;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 import com.example.arono.missfit.Drawer.BaseActivityWithNavigationDrawer;
 import com.example.arono.missfit.Item;
-import com.example.arono.missfit.Picture;
+import com.example.arono.missfit.PictureUtility;
 import com.example.arono.missfit.R;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Random;
 
 
@@ -63,7 +52,7 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
     private Spinner sizeSpinner,typeSpinner,colorSpinner;
     private EditText etPrice,etDescription,etBrand;
     private EditText etPhoneNumber;
-    private Picture picture;
+    private PictureUtility pictureUtility;
     private int num = 0,imageChanged[];
     private DataManager dataManager;
     private BackendlessUser user;
@@ -210,6 +199,7 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
         contentFrame.addView(view);
     }
 
+
     private void initTitle() {
         Intent titleIntent = getIntent();
         String title =  titleIntent.getStringExtra("title");
@@ -257,7 +247,7 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
             imageViews[i].setOnClickListener(this);
         }
         bimaps = new Bitmap[3];
-        picture = new Picture(this);
+        pictureUtility = new PictureUtility(this);
     }
     public void updatePhonePropertyAlert(){
         AlertDialog.Builder phoneNumberAlert = new AlertDialog.Builder(this);
@@ -417,23 +407,23 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            Bitmap bitmap = picture.getPictureFromGallery(data);
+            Bitmap bitmap = pictureUtility.getPictureFromGallery(data);
             Bitmap temp = bitmap;
             switch(num){
                 case 1:
                         bimaps[num-1] = bitmap;
-                        imageViews[num-1].setImageBitmap(picture.cropCenter(temp));
+                        imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
                         imageChanged[num - 1] = 1;
                         imageViews[num].setVisibility(View.VISIBLE);
                     break;
                 case 2: bimaps[num-1] = bitmap;
-                        imageViews[num-1].setImageBitmap(picture.cropCenter(temp));
+                        imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
                         imageChanged[num-1] = 1;
                         imageViews[num].setVisibility(View.VISIBLE);
                         checkBoxIvSecond.setEnabled(true);
                     break;
                 case 3: bimaps[num-1] = bitmap;
-                        imageViews[num-1].setImageBitmap(picture.cropCenter(temp));
+                        imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
                         imageChanged[num-1] = 1;
                         checkBoxIvThird.setEnabled(true);
                     break;
@@ -444,50 +434,32 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
         else if(requestCode == CAPTURE_PHOTO && resultCode == RESULT_OK){
             SharedPreferences sharedPreferences = getSharedPreferences("URI", MODE_PRIVATE);
             String s = sharedPreferences.getString("uri", null);
-            File file = new File(s);
-            Uri uri = Uri.fromFile(file);
-            Log.e("Error",uri.getPath());
-            imageViews[0].setImageURI(uri);
-            //Bitmap bitmap = picture.shrinkBitmap(uri.getPath(), 500, 500);
 
-
-
-
+            File f = new File(s);
+            Uri uri = Uri.fromFile(f);
+            int angle = pictureUtility.checkOrientation(uri.getPath());
+            Bitmap bitmap = pictureUtility.shrinkBitmap(uri.getPath(), 500, 500);
+            Bitmap sr = pictureUtility.rotateImage(bitmap, angle);
+            if(imageChanged[0] == 0) {
+                bimaps[0] = sr;
+                imageViews[0].setImageBitmap(pictureUtility.cropCenter(sr));
+                imageViews[1].setVisibility(View.VISIBLE);
+                checkBoxIvSecond.setEnabled(true);
+                imageChanged[0] = 1;
+            }
+            else if(imageChanged[1] == 0) {
+                bimaps[1] = sr;
+                imageViews[1].setImageBitmap(pictureUtility.cropCenter(sr));
+                imageViews[2].setVisibility(View.VISIBLE);
+                checkBoxIvThird.setEnabled(true);
+                imageChanged[1] = 1;
+            }
+            else{
+                bimaps[2] = sr;
+                imageViews[2].setImageBitmap(pictureUtility.cropCenter(sr));
+                imageChanged[2] = 1;
+            }
         }
-    }
-
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        // Always call the superclass so it can restore the view hierarchy
-        super.onRestoreInstanceState(savedInstanceState);
-
-        // Restore state members from saved instance
-       /* SharedPreferences sharedPreferences = getSharedPreferences("URI", MODE_PRIVATE);
-        String s = sharedPreferences.getString("uri", null);
-
-        File f = new File(s);
-        Uri uri = Uri.fromFile(f);
-        int angle = picture.checkOrientation(uri.getPath());
-        Bitmap bitmap = picture.shrinkBitmap(uri.getPath(), 500, 500);
-       Bitmap sr = picture.rotateImage(bitmap, angle);
-        if(imageChanged[0] == 0) {
-            bimaps[0] = bitmap;
-            imageViews[0].setImageBitmap(picture.cropCenter(sr));
-            imageViews[1].setVisibility(View.VISIBLE);
-            checkBoxIvSecond.setEnabled(true);
-            imageChanged[0] = 1;
-        }
-        else if(imageChanged[1] == 0) {
-            bimaps[1] = bitmap;
-            imageViews[1].setImageBitmap(picture.cropCenter(sr));
-            imageViews[2].setVisibility(View.VISIBLE);
-            checkBoxIvThird.setEnabled(true);
-            imageChanged[1] = 1;
-        }
-        else{
-            bimaps[2] = bitmap;
-            imageViews[2].setImageBitmap(picture.cropCenter(sr));
-            imageChanged[2] = 1;
-        }*/
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -508,15 +480,15 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
             Bitmap bitmapRotate;
             if (checkBoxIvFirst.isChecked()) {
                 bitmapRotate = ((BitmapDrawable) imageViews[0].getDrawable()).getBitmap();
-                imageViews[0].setImageBitmap(picture.rotateImage(bitmapRotate, Picture.ORIENTATION_ROTATE_90));
+                imageViews[0].setImageBitmap(pictureUtility.rotateImage(bitmapRotate, PictureUtility.ORIENTATION_ROTATE_90));
             }
             if (checkBoxIvSecond.isChecked()) {
                 bitmapRotate = ((BitmapDrawable) imageViews[1].getDrawable()).getBitmap();
-                imageViews[1].setImageBitmap(picture.rotateImage(bitmapRotate, Picture.ORIENTATION_ROTATE_90));
+                imageViews[1].setImageBitmap(pictureUtility.rotateImage(bitmapRotate, PictureUtility.ORIENTATION_ROTATE_90));
             }
             if (checkBoxIvThird.isChecked()) {
                 bitmapRotate = ((BitmapDrawable) imageViews[2].getDrawable()).getBitmap();
-                imageViews[2].setImageBitmap(picture.rotateImage(bitmapRotate, Picture.ORIENTATION_ROTATE_90));
+                imageViews[2].setImageBitmap(pictureUtility.rotateImage(bitmapRotate, PictureUtility.ORIENTATION_ROTATE_90));
             }
         }
         if(id == R.id.deleteId){

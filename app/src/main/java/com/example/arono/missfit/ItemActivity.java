@@ -1,8 +1,10 @@
 package com.example.arono.missfit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +25,7 @@ public class ItemActivity extends BaseActivityWithNavigationDrawer {
 
         View view = inflater.inflate(R.layout.activity_item, null, false);
         contentFrame.addView(view);
+
     }
 
     @Override

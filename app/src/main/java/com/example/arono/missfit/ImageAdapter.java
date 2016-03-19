@@ -30,10 +30,6 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
     ArrayList<Item> allData;
     DataManager dataManager;
 
-/*    public ImageAdapter(Context c,ArrayList data){
-        this.context = c;
-        this.allData = data;
-    }*/
     public ImageAdapter(Context c){
         this.context = c;
         dataManager = DataManager.getInstance();
@@ -87,13 +83,15 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
             @Override
             protected FilterResults performFiltering(CharSequence constraint) {
 
+                allData = dataManager.getItems();
                 filteredData = new ArrayList<String>();
 
                 for (Item s :  allData) {
                     if(s.getName().contains(constraint))
                         filteredData.add(s);
-                }
 
+                }
+                allData = filteredData;
                 FilterResults results = new FilterResults();
                 results.values = filteredData;
                 results.count = filteredData.size();

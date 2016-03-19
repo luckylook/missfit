@@ -1,6 +1,7 @@
 package com.example.arono.missfit;
 
 import android.graphics.Bitmap;
+import android.os.Parcelable;
 
 
 import com.backendless.BackendlessUser;
@@ -12,12 +13,11 @@ import java.io.Serializable;
 /**
  * Created by arono on 13/02/2016.
  */
-public class Item implements  Serializable{
+public class Item implements Serializable{
 
     private String name;
     private BackendlessUser user;
     private double price;
-    private Bitmap pictures[];
     private String type,brand,color,photoOne,photoTwo,photoThird,phoneNumber;
     private Size size;
 
@@ -26,26 +26,11 @@ public class Item implements  Serializable{
     public void setItem(String name,double price,String type,BackendlessUser user,Size size,String color,String brand){
         setName(name);
         setPrice(price);
-        setPictures(pictures);
         setType(type);
         setUser(user);
         setSize(size);
         setColor(color);
         setBrand(brand);
-    }
-
-    public void setPhoneNumber(String phoneNumber){
-        this.phoneNumber = phoneNumber;
-    }
-    public String getPhoneNumber(){
-        return phoneNumber;
-    }
-    public Bitmap[] getPictures() {
-        return pictures;
-    }
-
-    public void setPictures(Bitmap[] pictures) {
-        this.pictures = pictures;
     }
 
     public BackendlessUser getUser() {
