@@ -11,10 +11,13 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
+
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.exceptions.BackendlessException;
@@ -22,6 +25,7 @@ import com.example.arono.missfit.DataServerManagement.DataManager;
 import com.example.arono.missfit.Drawer.BaseActivityWithNavigationDrawer;
 import com.example.arono.missfit.ImageAdapter;
 import com.example.arono.missfit.Item;
+import com.example.arono.missfit.ItemActivity;
 import com.example.arono.missfit.R;
 
 import java.util.ArrayList;
@@ -32,7 +36,6 @@ public class MyItemsActivity extends BaseActivityWithNavigationDrawer {
     LayoutInflater inflater;
     ImageAdapter imageAdapter;
     RelativeLayout rl;
-    DataManager dataManager = new DataManager();
     GridView gvItems;
 
     @Override
@@ -63,7 +66,7 @@ public class MyItemsActivity extends BaseActivityWithNavigationDrawer {
 
         BackendlessUser user = Backendless.UserService.CurrentUser();
 
-        new LoadItemsFromSpecificUserAsyncTask(dataManager,this,user).execute();
+        new LoadItemsFromSpecificUserAsyncTask(this,user).execute();
 
         rl = (RelativeLayout)this.findViewById(R.id.rlMyItems);
         Intent titleIntent = getIntent();
@@ -73,6 +76,14 @@ public class MyItemsActivity extends BaseActivityWithNavigationDrawer {
         imageAdapter = new ImageAdapter(getApplicationContext());
         gvItems = new GridView(this);
         gvItems.setNumColumns(2);
+
+        gvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Intent intent = new Intent(getApplication().getApplicationContext(), ItemActivity.class);
+                startActivity(intent);
+            }
+        });
 
 
 
@@ -106,9 +117,9 @@ class LoadItemsFromSpecificUserAsyncTask extends AsyncTask {
     private BackendlessUser user;
     private ArrayList<Item> itemArrayList;
 
-    public LoadItemsFromSpecificUserAsyncTask(DataManager dataManager, Context c, BackendlessUser user){
+    public LoadItemsFromSpecificUserAsyncTask(Context c, BackendlessUser user){
         this.c = c;
-        this.dataManager = dataManager;
+        this.dataManager = DataManager.getInstance();
         this.user = user;
     }
     @Override
@@ -137,9 +148,12 @@ class LoadItemsFromSpecificUserAsyncTask extends AsyncTask {
     @Override
     protected void onPostExecute(Object o) {
         if(flag) {
-            imageAdapter.setItems(itemArrayList);
-            gvItems.setAdapter(imageAdapter);
-            rl.addView(gvItems);
+            if(itemArrayList.size() != 0) {
+                imageAdapter.setItems(itemArrayList);
+                gvItems.setAdapter(imageAdapter);
+                rl.addView(gvItems);
+            }else
+                Toast.makeText(getApplication().getApplicationContext(),"No Items",Toast.LENGTH_SHORT).show();
         }
 
 

@@ -19,6 +19,7 @@ import com.backendless.files.BackendlessFile;
 import com.backendless.persistence.BackendlessDataQuery;
 import com.example.arono.missfit.Activities.FeedActivity;
 import com.example.arono.missfit.Item;
+import com.example.arono.missfit.Picture;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -30,13 +31,22 @@ import java.util.ArrayList;
 public class DataManager {
 
     public final static String PICTURE_URL ="https://api.backendless.com/"+BackendUtility.APPLIATION_ID+"/"+BackendUtility.VERSION+"/files/"+"mypics/";
+    private static DataManager dataManager;
     ArrayList<Item> items;
     ArrayList<Item> itemsTops,itemsBottoms,itemShoes,itemsCustom;
 
-    public DataManager(){
+   /* public DataManager(){
 
     }
-
+*/
+    public static DataManager getInstance(){
+        if(dataManager == null){
+            dataManager = new DataManager();
+            Log.e("Error","new DataManager");
+        }
+        Log.e("Error","DataManager");
+        return dataManager;
+    }
 
     public void uploadToServer(Item item, final Context context){
         Backendless.Data.of(Item.class).save(item, new AsyncCallback<Item>() {
@@ -52,12 +62,12 @@ public class DataManager {
         });
     }
 
-    public String uploadPicture(ImageView imageView,int id,String name){
+    public String uploadPictureToTheServer(Bitmap photo, int id, String name){
         String url = "";
 
-        Bitmap photo = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        //Bitmap photo = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
 
-        Backendless.Files.Android.upload( photo, Bitmap.CompressFormat.PNG, 100, name+id+".png", "mypics", new AsyncCallback<BackendlessFile>()
+        Backendless.Files.Android.upload(photo, Bitmap.CompressFormat.PNG, 100, name+id+".png", "mypics", new AsyncCallback<BackendlessFile>()
         {
             @Override
             public void handleResponse( final BackendlessFile backendlessFile )
@@ -111,8 +121,6 @@ public class DataManager {
             @Override
             public void handleResponse(BackendlessCollection<Item> response) {
                 ArrayList<Item> itemArrayList  = (ArrayList<Item>) response.getData();
-                Log.e("Item",""+itemArrayList.size());
-                Log.e("Item", itemArrayList.get(0).getName());
                 callback.done(itemArrayList,null);
             }
 
@@ -125,16 +133,19 @@ public class DataManager {
     }
 
 
-    public void downloadImageFromServer(Context context,Item item,ImageView imageView, final ProgressBar progressBar){
+    public void downloadImageFromServer(final Context context,Item item, final ImageView imageView, final ProgressBar progressBar){
         Picasso.with(context).load(item.getPhotoOne()).into(imageView, new Callback() {
             @Override
             public void onSuccess() {
                 progressBar.setVisibility(View.INVISIBLE);
+                Bitmap src = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+                Picture picture = new Picture(context);
+                imageView.setImageBitmap(picture.cropCenter(src));
             }
 
             @Override
             public void onError() {
-
+                Toast.makeText(context, "Can't dowload from Server", Toast.LENGTH_SHORT).show();
             }
         });
     }

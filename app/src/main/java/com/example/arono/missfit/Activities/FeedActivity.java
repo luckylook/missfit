@@ -3,30 +3,26 @@ package com.example.arono.missfit.Activities;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckedTextView;
 import android.widget.FrameLayout;
 import android.widget.ListPopupWindow;
-import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 
-import com.backendless.Backendless;
 import com.backendless.exceptions.BackendlessException;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 import com.example.arono.missfit.Drawer.BaseActivityWithNavigationDrawer;
@@ -39,7 +35,7 @@ import com.example.arono.missfit.Slide.SlidingTabLayout;
 import java.util.ArrayList;
 
 
-public class FeedActivity extends BaseActivityWithNavigationDrawer {
+public class FeedActivity extends BaseActivityWithNavigationDrawer implements FetchDataListener {
 
     public static final int SIZE = 4;
     public static final String TOPS = "TOPS";
@@ -53,8 +49,8 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer {
     ImageAdapter[] imageAdapter;
     FrameLayout contentFrame;
     LayoutInflater inflater;
-    DataManager dataManager;
-    ArrayList<Item> itemArrayList;
+    View popUp ;
+    ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,46 +58,76 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer {
 
 
         contentFrame = getContentFrame();
-        inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         View view = inflater.inflate(R.layout.activity_feed, null, false);
         contentFrame.addView(view);
 
-        final View popUp = inflater.inflate(R.layout.pop_up_progress_bar, null, false);
-        final ProgressBar progressBar = (ProgressBar) popUp.findViewById(R.id.popUpProgressBar);
-        contentFrame.addView(popUp);
-
-
-        new Handler().postDelayed(new Runnable() {
-
-            @Override
-            public void run() {
-                progressBar.setVisibility(View.INVISIBLE);
-                contentFrame.removeView(popUp);
-            }
-
-        }, 2000L);
-
         imageAdapter = new ImageAdapter[SIZE];
-        for(int i = 0 ; i < SIZE ; i++)
+        for (int i = 0; i < SIZE; i++)
             imageAdapter[i] = new ImageAdapter(getApplicationContext());
 
         viewPager = (ViewPager) findViewById(R.id.viewPager);
-
-        itemArrayList = (ArrayList<Item>) getIntent().getSerializableExtra("itemArray");
-        dataManager = new DataManager();
-        dataManager.setItems(itemArrayList);
-        dataManager.orderingItemsByCategory(dataManager.getItems());
-        
         FragmentManager fm = getSupportFragmentManager();
-        tabAdapter = new TabAdapter(fm,imageAdapter,dataManager);
-        viewPager.setAdapter(tabAdapter);
-        tabs = (SlidingTabLayout)findViewById(R.id.tabs);
-        tabs.setViewPager(viewPager);
+        tabAdapter = new TabAdapter(fm, imageAdapter);
+        tabs = (SlidingTabLayout) findViewById(R.id.tabs);
 
+
+        Intent intent = getIntent();
+        boolean flag = intent.getBooleanExtra("STOP", false);
+        if (!flag) {
+            popUp = inflater.inflate(R.layout.logo, null, false);
+            progressBar = (ProgressBar) popUp.findViewById(R.id.progressId);
+            contentFrame.addView(popUp);
+
+            getSupportActionBar().hide();
+            LoadAllItemAsyncTask s = new LoadAllItemAsyncTask(getApplication().getApplicationContext(), progressBar);
+            s.setListener(this);
+            s.execute();
+            /*itemArrayList = (ArrayList<Item>) getIntent().getSerializableExtra("itemArray");
+
+            dataManager.setItems(itemArrayList);
+            dataManager.orderingItemsByCategory(dataManager.getItems());
+
+
+            viewPager.setAdapter(tabAdapter);
+
+            tabs.setViewPager(viewPager);*/
+            Log.e("Error", "dasddHere");
+        } else {
+            final View popUp = inflater.inflate(R.layout.pop_up_progress_bar, null, false);
+            final ProgressBar progressBar = (ProgressBar) popUp.findViewById(R.id.popUpProgressBar);
+            contentFrame.addView(popUp);
+
+
+            new Handler().postDelayed(new Runnable() {
+
+                @Override
+                public void run() {
+                    progressBar.setVisibility(View.INVISIBLE);
+                    contentFrame.removeView(popUp);
+                }
+
+            }, 2000L);
+            getSupportActionBar().show();
+            LoadAllItemAsyncTask s = new LoadAllItemAsyncTask(getApplication().getApplicationContext(), progressBar);
+            s.execute();
+            Log.e("Error", "Aftercgvcv");
+        }
         Log.e("FeedActivity", "FeedActivity");
 
 
+    }
+
+    private void removeSplashScreen() {
+        progressBar.setVisibility(View.INVISIBLE);
+        contentFrame.removeView(popUp);
+        getSupportActionBar().show();
+    }
+
+    @Override
+    public void onDataReceived() {
+        removeSplashScreen();
     }
 
     @Override
@@ -179,6 +205,66 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer {
 
         return super.onOptionsItemSelected(item);
     }
+
+    class LoadAllItemAsyncTask extends AsyncTask {
+
+    private FetchDataListener fetchListener;
+
+    private ProgressBar progressBar;
+    private DataManager dataManager;
+    private Context c;
+    private boolean flag = false;
+    private ArrayList<Item> itemArrayList;
+
+
+    public LoadAllItemAsyncTask(Context c, ProgressBar progressBar){
+        this.c = c;
+        this.progressBar = progressBar;
+        this.dataManager = DataManager.getInstance();
+        progressBar.setVisibility(View.VISIBLE);
+    }
+    @Override
+    protected Object doInBackground(Object... objects) {
+        dataManager.getAllObjects(new DataManager.GetAllCallback() {
+            @Override
+
+            public void done(ArrayList<Item> value, BackendlessException e) {
+                itemArrayList = value;
+                flag = true;
+                Log.e("Error","finish load all the items");
+            }
+        });
+        try {
+            Thread.sleep(2000);
+            Log.e("Error", "sleep");
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    @Override
+    protected void onPostExecute(Object o) {
+        if(flag) {
+            if (fetchListener != null) {
+                fetchListener.onDataReceived();
+            }
+            progressBar.setVisibility(View.INVISIBLE);
+            dataManager.setItems(itemArrayList);
+            dataManager.orderingItemsByCategory(dataManager.getItems());
+            viewPager.setAdapter(tabAdapter);
+            tabs.setViewPager(viewPager);
+        }
+
+
+    }
+
+        public void setListener(FetchDataListener listener) {
+            this.fetchListener = listener;
+        }
+    }
 }
 
 class TabAdapter extends FragmentStatePagerAdapter {
@@ -188,15 +274,15 @@ class TabAdapter extends FragmentStatePagerAdapter {
     ImageAdapter[] im;
     DataManager dataManager;
 
-    public TabAdapter(FragmentManager fm,ImageAdapter[] imageAdapter,DataManager dataManager) {
+    public TabAdapter(FragmentManager fm,ImageAdapter[] imageAdapter) {
         super(fm);
         im = imageAdapter;
-        this.dataManager = dataManager;
+        this.dataManager = DataManager.getInstance();
     }
 
     @Override
     public Fragment getItem(int position) {
-        fragmentCategory = FragmentCategory.getInstace(position, im[position],dataManager);
+        fragmentCategory = FragmentCategory.getInstance(position, im[position]);
         return fragmentCategory;
     }
 
@@ -216,5 +302,6 @@ class TabAdapter extends FragmentStatePagerAdapter {
         return null;
     }
 }
+
 
 

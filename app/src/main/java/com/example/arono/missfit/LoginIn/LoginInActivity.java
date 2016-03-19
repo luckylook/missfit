@@ -2,6 +2,7 @@ package com.example.arono.missfit.LoginIn;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -15,7 +16,7 @@ import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
 import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessFault;
-import com.example.arono.missfit.Activities.LoadItemsActivity;
+import com.example.arono.missfit.Activities.FeedActivity;
 import com.example.arono.missfit.DataServerManagement.BackendUtility;
 import com.example.arono.missfit.R;
 
@@ -32,6 +33,8 @@ public class LoginInActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_login_in);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         Backendless.initApp(this, BackendUtility.APPLIATION_ID, BackendUtility.APPLIATION_Key, BackendUtility.VERSION);
 
@@ -66,7 +69,7 @@ public class LoginInActivity extends AppCompatActivity {
         Backendless.UserService.login(etEmail.getText().toString(), etPassword.getText().toString(), new AsyncCallback<BackendlessUser>() {
             public void handleResponse(BackendlessUser user) {
                 //startActivity(new Intent(c,FeedActivity.class));
-                startActivity(new Intent(c,LoadItemsActivity.class));
+                startActivity(new Intent(c,FeedActivity.class));
 
             }
 

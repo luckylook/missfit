@@ -36,7 +36,7 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
     }*/
     public ImageAdapter(Context c){
         this.context = c;
-        dataManager = new DataManager();
+        dataManager = DataManager.getInstance();
     }
     public int getCount() {
         return filteredData.size();
@@ -89,7 +89,7 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
 
                 filteredData = new ArrayList<String>();
 
-                for (Item s : (ArrayList<Item>) allData) {
+                for (Item s :  allData) {
                     if(s.getName().contains(constraint))
                         filteredData.add(s);
                 }

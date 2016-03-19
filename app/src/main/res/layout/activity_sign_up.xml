@@ -1,32 +1,21 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:background="#ffcc00"
+    android:background="@drawable/logo12"
     tools:context="com.example.arono.missfit.MyLoginActivity">
 
-    <!-- Login progress -->
-    <ProgressBar
-        android:id="@+id/login_progress"
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:visibility="gone" />
-
-    <ScrollView
-        android:id="@+id/login_form"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/email_login_form"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
+            android:orientation="vertical"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true">
 
             <EditText
                 android:id="@+id/email_signin"
@@ -35,6 +24,8 @@
                 android:hint="Email (mandatory)"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
+                android:background="@drawable/barlogin24"
+                android:layout_marginBottom="5dp"
                 android:singleLine="true" />
 
             <EditText
@@ -44,6 +35,8 @@
                 android:hint="Name (optional)"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/barlogin24"
                 android:singleLine="true" />
 
 
@@ -56,6 +49,8 @@
                 android:imeActionLabel="@string/action_sign_in_short"
                 android:imeOptions="actionUnspecified"
                 android:inputType="textPassword"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/barlogin24"
                 android:maxLines="1"
                 android:singleLine="true" />
 
@@ -69,6 +64,8 @@
                 android:imeActionLabel="@string/action_sign_in_short"
                 android:imeOptions="actionUnspecified"
                 android:inputType="textPassword"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/barlogin24"
                 android:maxLines="1"
                 android:singleLine="true" />
 
@@ -80,6 +77,8 @@
                 android:hint="Phone (optional)"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/barlogin24"
                 android:singleLine="true" />
 
 
@@ -90,6 +89,8 @@
                 android:hint="City (optional)"
                 android:inputType="textEmailAddress"
                 android:maxLines="1"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/barlogin24"
                 android:singleLine="true" />
 
             <Button
@@ -102,5 +103,5 @@
                 android:textStyle="bold" />
 
         </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+
+</RelativeLayout>

@@ -74,7 +74,7 @@ public class Picture {
                 angle = 0;
                 break;
         }
-        Log.e("Error","picture angle = "+angle);
+        Log.e("Error", "picture angle = " + angle);
         return angle;
     }
 
@@ -94,7 +94,7 @@ public class Picture {
         String picturePath = cursor.getString(columnIndex);
         cursor.close();
 
-        Bitmap bitmap = shrinkBitmap(picturePath,500,500);
+        Bitmap bitmap = shrinkBitmap(picturePath, 500, 500);
 
         int angle = checkOrientation(picturePath);
 
@@ -136,5 +136,33 @@ public class Picture {
         return bitmap;
     }
 
+    /**
+     * this function crop the center of the Image
+     * @param src the Image that u want to crop
+     * @return Bitmap
+     */
+    public Bitmap cropCenter(Bitmap src){
+        if (src.getWidth() >= src.getHeight()){
+
+            src = Bitmap.createBitmap(
+                    src,
+                    src.getWidth()/2 - src.getHeight()/2,
+                    0,
+                    src.getHeight(),
+                    src.getHeight()
+            );
+
+        }else{
+
+            src = Bitmap.createBitmap(
+                    src,
+                    0,
+                    src.getHeight()/2 - src.getWidth()/2,
+                    src.getWidth(),
+                    src.getWidth()
+            );
+        }
+        return src;
+    }
 
 }

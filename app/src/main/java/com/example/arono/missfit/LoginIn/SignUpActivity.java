@@ -1,5 +1,6 @@
 package com.example.arono.missfit.LoginIn;
 
+import android.content.pm.ActivityInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -24,7 +25,6 @@ public class SignUpActivity extends AppCompatActivity {
 
     private Button signInBtn;
     private BackendlessUser user;
-    AsyncCallback asyncCallback;
 
     HashMap<String, Object> properties = new HashMap<>();
 
@@ -35,7 +35,8 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_up);
-        Backendless.initApp(this, BackendUtility.APPLIATION_ID, BackendUtility.APPLIATION_Key, BackendUtility.VERSION);
+
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         signInBtn = (Button)findViewById(R.id.sign_in_button);
 

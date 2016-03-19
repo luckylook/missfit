@@ -17,32 +17,35 @@ public class Item implements  Serializable{
     private String name;
     private BackendlessUser user;
     private double price;
-    private Bitmap picture[];
-    private String photoOne,photoTwo,photoThird;
-    private int id;
-    private String type;
-    private String brand;
-    private String color;
+    private Bitmap pictures[];
+    private String type,brand,color,photoOne,photoTwo,photoThird,phoneNumber;
     private Size size;
 
 
 
-    public void setItem(String name,double price,String type,BackendlessUser user,Size size){
+    public void setItem(String name,double price,String type,BackendlessUser user,Size size,String color,String brand){
         setName(name);
         setPrice(price);
-        setPicture(picture);
+        setPictures(pictures);
         setType(type);
         setUser(user);
         setSize(size);
-
-    }
-    
-    public Bitmap[] getPicture() {
-        return picture;
+        setColor(color);
+        setBrand(brand);
     }
 
-    public void setPicture(Bitmap[] picture) {
-        this.picture = picture;
+    public void setPhoneNumber(String phoneNumber){
+        this.phoneNumber = phoneNumber;
+    }
+    public String getPhoneNumber(){
+        return phoneNumber;
+    }
+    public Bitmap[] getPictures() {
+        return pictures;
+    }
+
+    public void setPictures(Bitmap[] pictures) {
+        this.pictures = pictures;
     }
 
     public BackendlessUser getUser() {
@@ -59,14 +62,6 @@ public class Item implements  Serializable{
 
     public void setPrice(double price) {
         this.price = price;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getType() {
@@ -125,11 +120,11 @@ public class Item implements  Serializable{
                 break;
             case "XS": size = Size.XS;
                 break;
-            case "SMALL": size = Size.SMALL;
+            case "S": size = Size.SMALL;
                 break;
-            case "MEDIUM": size = Size.MEDIUM;
+            case "M": size = Size.MEDIUM;
                 break;
-            case "LARGE": size = Size.LARGE;
+            case "L": size = Size.LARGE;
                 break;
             case "XL": size = Size.XL;
                 break;

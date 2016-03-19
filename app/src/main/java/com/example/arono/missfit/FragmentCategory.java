@@ -34,7 +34,7 @@ public class FragmentCategory extends Fragment {
     RelativeLayout.LayoutParams relativeLayoutParams;
     int flDimension,position;
     DataManager dataManager;
-    ArrayList<Item> itemsArray;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -107,7 +107,7 @@ public class FragmentCategory extends Fragment {
         gvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getActivity(), MyItemsActivity.class);
+                Intent intent = new Intent(getActivity(), ItemActivity.class);
                 startActivity(intent);
             }
         });
@@ -119,10 +119,10 @@ public class FragmentCategory extends Fragment {
         return (int) (heightPixels * FLHEIGHT);
     }
 
-    public static FragmentCategory getInstace(int position,ImageAdapter imageAdapter,DataManager dataManger){
+    public static FragmentCategory getInstance(int position, ImageAdapter imageAdapter){
         FragmentCategory FragmentCategory = new FragmentCategory();
         FragmentCategory.imageAdapter = imageAdapter;
-        FragmentCategory.dataManager = dataManger;
+        FragmentCategory.dataManager = DataManager.getInstance();
         
         Bundle bundle = new Bundle();
         bundle.putInt("position",position);
