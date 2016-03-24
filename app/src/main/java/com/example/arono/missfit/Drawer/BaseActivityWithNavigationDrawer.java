@@ -24,12 +24,12 @@ import java.util.ArrayList;
 
 public class BaseActivityWithNavigationDrawer extends AppCompatActivity {
 
-        Toolbar toolbar;
-        DrawerLayout drawerLayout;
-        ListView drawerList;
-        ActionBarDrawerToggle drawerToggle;
-        ArrayList<DrawerItem> drawerItem;
-        FrameLayout contentFrame;
+        private Toolbar toolbar;
+        private DrawerLayout drawerLayout;
+        private ListView drawerList;
+        private ActionBarDrawerToggle drawerToggle;
+        private ArrayList<DrawerItem> drawerItem;
+        private FrameLayout contentFrame;
 
 
         @Override

@@ -7,9 +7,5 @@
         app:showAsAction="ifRoom"
         app:actionViewClass="android.widget.SearchView"
         android:icon="@drawable/search24"/>
-    <item android:id="@+id/filterID" android:title="filter"
-        android:orderInCategory="200"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/filter24"/>
 
 </menu>

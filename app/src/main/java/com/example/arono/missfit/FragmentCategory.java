@@ -15,8 +15,8 @@ import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 
-import com.example.arono.missfit.Activities.FeedActivity;
-import com.example.arono.missfit.Activities.MyItemsActivity;
+import com.backendless.BackendlessUser;
+import com.example.arono.missfit.Activities.ShowItemActivity;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 
 import java.util.ArrayList;
@@ -25,15 +25,16 @@ import java.util.ArrayList;
 public class FragmentCategory extends Fragment {
 
     final float FLHEIGHT = 0.8f;
-    FrameLayout frameLayoutChild;
-    RelativeLayout rl;
-    FrameLayout.LayoutParams flLayoutParams;
-    GridView gvItems;
-    DisplayMetrics displayMetrics;
-    public ImageAdapter imageAdapter;
-    RelativeLayout.LayoutParams relativeLayoutParams;
-    int flDimension,position;
-    DataManager dataManager;
+
+    private FrameLayout frameLayoutChild;
+    private RelativeLayout rl;
+    private FrameLayout.LayoutParams flLayoutParams;
+    private GridView gvItems;
+    private DisplayMetrics displayMetrics;
+    private ImageAdapter imageAdapter;
+    private RelativeLayout.LayoutParams relativeLayoutParams;
+    private int flDimension,position;
+    private DataManager dataManager;
 
     @Nullable
     @Override
@@ -103,15 +104,31 @@ public class FragmentCategory extends Fragment {
     }
 
 
+
+
+
     public void gridViewSelectedItems(){
         gvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getActivity(), ItemActivity.class);
+                Intent intent = new Intent(getActivity(), ShowItemActivity.class);
+                BackendlessUser user = imageAdapter.getItem(i).getUser();
+                Item item = imageAdapter.getItem(i);
+                intent.putExtra("Description",item.getName());
+                intent.putExtra("phone",(String) user.getProperty("phone"));
+                intent.putExtra("brand",item.getBrand());
+                intent.putExtra("color", item.getColor());
+                intent.putExtra("size", Item.sizeToString(item.getSize()));
+                intent.putExtra("type", item.getType());
+                intent.putExtra("price", String.valueOf(item.getPrice()));
+                intent.putExtra("photoOne", item.getPhotoOne());
+                intent.putExtra("photoTwo", item.getPhotoTwo());
+                intent.putExtra("photoThree", item.getPhotoThird());
                 startActivity(intent);
             }
         });
     }
+
     public int display(){
         displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);

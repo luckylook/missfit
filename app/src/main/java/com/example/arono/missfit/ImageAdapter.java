@@ -24,11 +24,11 @@ import java.util.ArrayList;
  */
 public class ImageAdapter extends BaseAdapter implements Filterable{
 
-    Context context;
-    LayoutInflater inflater;
-    ArrayList filteredData;
-    ArrayList<Item> allData;
-    DataManager dataManager;
+    private Context context;
+    private LayoutInflater inflater;
+    private ArrayList<Item> filteredData;
+    private ArrayList<Item> allData;
+    private DataManager dataManager;
 
     public ImageAdapter(Context c){
         this.context = c;
@@ -44,7 +44,7 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
     }
 
     @Override
-    public Object getItem(int i) {
+    public Item getItem(int i) {
         return filteredData.get(i);
     }
 
@@ -76,7 +76,10 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
     }
 
 
-
+    /**
+     *
+     * @return Filters results by word that the user is looking for.
+     */
     @Override
     public Filter getFilter() {
         return new Filter() {
@@ -84,7 +87,7 @@ public class ImageAdapter extends BaseAdapter implements Filterable{
             protected FilterResults performFiltering(CharSequence constraint) {
 
                 allData = dataManager.getItems();
-                filteredData = new ArrayList<String>();
+                filteredData = new ArrayList<Item>();
 
                 for (Item s :  allData) {
                     if(s.getName().contains(constraint))

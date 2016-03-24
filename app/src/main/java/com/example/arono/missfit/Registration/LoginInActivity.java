@@ -26,8 +26,7 @@ public class LoginInActivity extends AppCompatActivity {
     private EditText etEmail,etPassword;
     private TextView tvSignIn;
     private Button btnLogIn;
-    Context c = this;
-    AsyncCallback<BackendlessUser> callback;
+    private Context c = this;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

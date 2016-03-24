@@ -22,46 +22,46 @@ import com.example.arono.missfit.Registration.LoginInActivity;
 
 public class ProfileActivity extends BaseActivityWithNavigationDrawer {
 
-    LayoutInflater inflater;
-    FrameLayout contentFrame;
-    TextView tvName,tvEmail,tvPhone,tvCity;
-    BackendlessUser user;
-    Button btnLogOut;
+    private LayoutInflater inflater;
+    private FrameLayout contentFrame;
+    private TextView tvName,tvEmail,tvPhone,tvCity;
+    private BackendlessUser user;
+    private Button btnLogOut;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initFrameView();
+        initTitle();
+        initialize();
+        setProfileInformationInsideTextView();
+        logOut();
+
+    }
+
+    public void initFrameView(){
         contentFrame = getContentFrame();
         inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.activity_profile, null, false);
         contentFrame.addView(view);
+    }
 
+    public void initTitle(){
         Intent titleIntent = getIntent();
         String title =  titleIntent.getStringExtra("title");
         getSupportActionBar().setTitle(title);
+    }
 
+    public void initialize(){
         tvName = (TextView) findViewById(R.id.tvName);
         tvEmail = (TextView) findViewById(R.id.tvEmail);
         tvPhone = (TextView) findViewById(R.id.tvPhone);
         tvCity = (TextView) findViewById(R.id.tvCity);
 
         btnLogOut = (Button) findViewById(R.id.btnLogOut);
+    }
 
-        user = Backendless.UserService.CurrentUser();
-        String email = user.getEmail();
-        String name = (String) user.getProperty("name");
-        String phone = (String) user.getProperty("phone");
-        String city = (String) user.getProperty("city");
-
-        tvEmail.setText(email);
-        tvName.setText(name);
-        if(phone != null){
-            tvPhone.setText(phone);
-        }
-        if(city != null){
-            tvCity.setText(city);
-        }
-
+    public void logOut(){
         btnLogOut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -80,25 +80,22 @@ public class ProfileActivity extends BaseActivityWithNavigationDrawer {
                 });
             }
         });
-
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_profile, menu);
-        return true;
-    }
+    public void setProfileInformationInsideTextView(){
+        user = Backendless.UserService.CurrentUser();
+        String email = user.getEmail();
+        String name = (String) user.getProperty("name");
+        String phone = (String) user.getProperty("phone");
+        String city = (String) user.getProperty("city");
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-
-        return super.onOptionsItemSelected(item);
+        tvEmail.setText(email);
+        tvName.setText(name);
+        if(phone != null){
+            tvPhone.setText(phone);
+        }
+        if(city != null){
+            tvCity.setText(city);
+        }
     }
 }

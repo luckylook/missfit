@@ -20,13 +20,12 @@ import java.util.ArrayList;
  */
 public class DrawerItemAdapter extends BaseAdapter {
 
-    Context context;
-    LayoutInflater inflater;
-    ArrayList<DrawerItem> allData;
+    private Context context;
+    private LayoutInflater inflater;
+    private ArrayList<DrawerItem> allData;
 
     public DrawerItemAdapter(Context c,ArrayList data){
         this.context = c;
-        //inflater = (LayoutInflater) c.getSystemService(c.LAYOUT_INFLATER_SERVICE);
         this.allData = data;
     }
     public DrawerItemAdapter(Context c){
@@ -54,8 +53,8 @@ public class DrawerItemAdapter extends BaseAdapter {
         TextView tvName = (TextView)row.findViewById(R.id.textViewName);
         ImageView imageView = (ImageView)row.findViewById(R.id.imageViewIcon);
         DrawerItem drawerItem = allData.get(i);
-        tvName.setText(drawerItem.name);
-        imageView.setImageResource(drawerItem.icon);
+        tvName.setText(drawerItem.getName());
+        imageView.setImageResource(drawerItem.getIcon());
         return row;
     }
 

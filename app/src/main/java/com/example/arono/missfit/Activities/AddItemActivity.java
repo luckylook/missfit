@@ -47,6 +47,7 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
     private static int RESULT_LOAD_IMAGE = 1;
     private static int CAPTURE_PHOTO = 2;
     private static int IMAGE_VIEW_SIZE = 3;
+
     private ImageView imageViews[],colorImageView;
     private CheckBox checkBoxIvFirst,checkBoxIvSecond,checkBoxIvThird;
     private Spinner sizeSpinner,typeSpinner,colorSpinner;
@@ -58,138 +59,26 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
     private BackendlessUser user;
     private Button btnCancel,btnSave,btnCamera;
     private String phone;
-    private Bitmap[] bimaps;
-    static Uri outputFileUri,uri;
+    private Bitmap[] bitmaps;
+    private Uri outputFileUri;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //Backendless.initApp(this, BackendUtility.APPLIATION_ID, BackendUtility.APPLIATION_Key, BackendUtility.VERSION);
 
         initFrameView();
         initTitle();
         initialize();
 
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                finish();
-            }
-        });
-
         checkBoxEnable();
-
-        colorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                checkingColor();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
-
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String type = typeSpinner.getSelectedItem().toString();
-                Item.Size size = Item.stringToSize(sizeSpinner.getSelectedItem().toString());
-                String color = colorSpinner.getSelectedItem().toString();
-                String description = etDescription.getText().toString();
-                String checkPrice = etPrice.getText().toString();
-                String brand = etBrand.getText().toString();
-                user = Backendless.UserService.CurrentUser();
-
-                int sizeOfImages = checkHowMuchImagesTheUserUpload();
-                boolean[] checkFlags = new boolean[4];
-
-                checkingVariableNotEmpty(checkFlags, description, checkPrice, sizeOfImages, brand);
-
-                if (checkFlags[0] && checkFlags[1] && checkFlags[2] && checkFlags[3]) {
-                    Float price = Float.parseFloat(checkPrice);
-                    if (price > 0) {
-                        Item item = new Item();
-                        item.setItem(description, price, type, user, size, color, brand);
-
-                        String[] photos = new String[sizeOfImages];
-                        num = getRandomId();
-
-                        for (int i = 0; i < sizeOfImages; i++) {
-                            photos[i] = dataManager.uploadPictureToTheServer(bimaps[i], num, description + (i + 1));
-                        }
-
-                        if (sizeOfImages >= 1) {
-                            item.setPhotoOne(photos[0]);
-                            if (sizeOfImages >= 2) {
-                                item.setPhotoTwo(photos[1]);
-                                if (sizeOfImages == 3)
-                                    item.setPhotoThird(photos[2]);
-                            }
-                        }
+        cancelActivity();
+        setSpinnerListener();
+        saveItem();
+        takePhoto();
 
 
-                        dataManager.uploadToServer(item, getApplicationContext());
 
-                        phone = (String) user.getProperty("phone");
-
-                        if (phone == null) {
-                            updatePhonePropertyAlert();
-                        } else
-                            uploadAnotherItemAlertDialog();
-
-
-                    } else {
-                        Toast.makeText(getApplication().getApplicationContext(), "Price must be greater then zero", Toast.LENGTH_SHORT).show();
-                    }
-
-                } else {
-                    if (!checkFlags[0] && !checkFlags[1] && !checkFlags[2]) {
-                        Toast.makeText(getApplication().getApplicationContext(), "must fill All Field", Toast.LENGTH_SHORT).show();
-                    } else if (!checkFlags[0]) {
-                        Toast.makeText(getApplication().getApplicationContext(), "must set Description", Toast.LENGTH_SHORT).show();
-                    } else if (!checkFlags[1]) {
-                        Toast.makeText(getApplication().getApplicationContext(), "must set Price", Toast.LENGTH_SHORT).show();
-                    } else if (!checkFlags[2]) {
-                        Toast.makeText(getApplication().getApplicationContext(), "at least 1 image", Toast.LENGTH_SHORT).show();
-                    } else
-                        Toast.makeText(getApplication().getApplicationContext(), "must set Brand", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-
-        btnCamera.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/";
-                File newDir = new File(dir);
-                newDir.mkdirs();
-                int x = getRandomId();
-                String file = dir + x + ".jpg";
-                File newFile = new File(file);
-                try {
-                    newFile.createNewFile();
-                } catch (IOException e) {
-                    Log.e("Error", e.getMessage());
-                }
-                Intent cameraIntent = new Intent();
-                cameraIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
-                outputFileUri = Uri.fromFile(newFile);
-                SharedPreferences sharedPreferences = getSharedPreferences("URI", MODE_PRIVATE);
-                SharedPreferences.Editor spEdit = sharedPreferences.edit();
-                spEdit.putString("uri", outputFileUri.getPath());
-                spEdit.apply();
-
-                if (cameraIntent.resolveActivity(getPackageManager()) != null) {
-                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
-                    startActivityForResult(cameraIntent, CAPTURE_PHOTO);
-                }
-                Log.e("Error", outputFileUri.getPath());
-
-            }
-        });
     }
 
     private void initFrameView() {
@@ -246,9 +135,122 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
             imageViews[i].setImageResource(R.drawable.add3);
             imageViews[i].setOnClickListener(this);
         }
-        bimaps = new Bitmap[3];
+        bitmaps = new Bitmap[3];
         pictureUtility = new PictureUtility(this);
     }
+
+    public void cancelActivity(){
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
+    }
+
+    public void saveItem(){
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String type = typeSpinner.getSelectedItem().toString();
+                Item.Size size = Item.stringToSize(sizeSpinner.getSelectedItem().toString());
+                String color = colorSpinner.getSelectedItem().toString();
+                String description = etDescription.getText().toString();
+                String checkPrice = etPrice.getText().toString();
+                String brand = etBrand.getText().toString();
+                user = Backendless.UserService.CurrentUser();
+
+                int sizeOfImages = checkHowMuchImagesTheUserUpload();
+                boolean[] checkFlags = new boolean[4];
+
+                checkingVariableNotEmpty(checkFlags, description, checkPrice, sizeOfImages, brand);
+
+                if (checkFlags[0] && checkFlags[1] && checkFlags[2] && checkFlags[3]) {
+                    Float price = Float.parseFloat(checkPrice);
+                    if (price > 0) {
+                        Item item = new Item();
+                        item.setItem(description, price, type, user, size, color, brand);
+
+                        String[] photos = new String[sizeOfImages];
+                        num = getRandomId();
+
+                        for (int i = 0; i < sizeOfImages; i++) {
+                            photos[i] = dataManager.uploadPictureToTheServer(bitmaps[i], num, description + (i + 1));
+                        }
+
+                        if (sizeOfImages >= 1) {
+                            item.setPhotoOne(photos[0]);
+                            if (sizeOfImages >= 2) {
+                                item.setPhotoTwo(photos[1]);
+                                if (sizeOfImages == 3)
+                                    item.setPhotoThird(photos[2]);
+                            }
+                        }
+
+
+                        dataManager.uploadToServer(item, getApplicationContext());
+
+                        phone = (String) user.getProperty("phone");
+
+                        if (phone == null) {
+                            updatePhonePropertyAlert();
+                        } else
+                            uploadAnotherItemAlertDialog();
+
+
+                    } else {
+                        Toast.makeText(getApplication().getApplicationContext(), "Price must be greater then zero", Toast.LENGTH_SHORT).show();
+                    }
+
+                } else {
+                    if (!checkFlags[0] && !checkFlags[1] && !checkFlags[2]) {
+                        Toast.makeText(getApplication().getApplicationContext(), "must fill All Field", Toast.LENGTH_SHORT).show();
+                    } else if (!checkFlags[0]) {
+                        Toast.makeText(getApplication().getApplicationContext(), "must set Description", Toast.LENGTH_SHORT).show();
+                    } else if (!checkFlags[1]) {
+                        Toast.makeText(getApplication().getApplicationContext(), "must set Price", Toast.LENGTH_SHORT).show();
+                    } else if (!checkFlags[2]) {
+                        Toast.makeText(getApplication().getApplicationContext(), "at least 1 image", Toast.LENGTH_SHORT).show();
+                    } else
+                        Toast.makeText(getApplication().getApplicationContext(), "must set Brand", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    public void takePhoto(){
+        btnCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/missFit/";
+                File newDir = new File(dir);
+                newDir.mkdirs();
+                int x = getRandomId();
+                String file = dir + x + ".jpg";
+                File newFile = new File(file);
+                try {
+                    newFile.createNewFile();
+                } catch (IOException e) {
+                    Log.e("Error", e.getMessage());
+                }
+                Intent cameraIntent = new Intent();
+                cameraIntent.setAction(MediaStore.ACTION_IMAGE_CAPTURE);
+                outputFileUri = Uri.fromFile(newFile);
+                SharedPreferences sharedPreferences = getSharedPreferences("URI", MODE_PRIVATE);
+                SharedPreferences.Editor spEdit = sharedPreferences.edit();
+                spEdit.putString("uri", outputFileUri.getPath());
+                spEdit.apply();
+
+                if (cameraIntent.resolveActivity(getPackageManager()) != null) {
+                    cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+                    startActivityForResult(cameraIntent, CAPTURE_PHOTO);
+                }
+                Log.e("Error", outputFileUri.getPath());
+
+            }
+        });
+    }
+
     public void updatePhonePropertyAlert(){
         AlertDialog.Builder phoneNumberAlert = new AlertDialog.Builder(this);
         etPhoneNumber.setHintTextColor(Color.BLACK);
@@ -278,6 +280,50 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
         });
         AlertDialog alertDialog = phoneNumberAlert.create();
         alertDialog.show();
+    }
+
+    public void uploadAnotherItemAlertDialog(){
+        AlertDialog.Builder finishUploadAlert = new AlertDialog.Builder(this);
+        finishUploadAlert.setTitle("Finish Upload").setMessage("Do you want to upload another Item?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                for (int j = 0; j < IMAGE_VIEW_SIZE; j++) {
+                    imageViews[j].setImageResource(R.drawable.add3);
+                    imageChanged[j] = 0;
+                }
+                imageViews[1].setVisibility(View.INVISIBLE);
+                imageViews[2].setVisibility(View.INVISIBLE);
+                etDescription.setText("");
+                etPrice.setText("");
+                etBrand.setText("");
+                checkBoxIvFirst.setChecked(false);
+                checkBoxIvSecond.setChecked(false);
+                checkBoxIvThird.setChecked(false);
+
+
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                finish();
+            }
+        });
+        AlertDialog alertDialog1 = finishUploadAlert.create();
+        alertDialog1.show();
+    }
+
+    public void setSpinnerListener(){
+        colorSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                checkingColor();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
     public void checkingColor(){
         String color = colorSpinner.getSelectedItem().toString();
@@ -335,36 +381,6 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
     }
 
 
-    public void uploadAnotherItemAlertDialog(){
-        AlertDialog.Builder finishUploadAlert = new AlertDialog.Builder(this);
-        finishUploadAlert.setTitle("Finish Upload").setMessage("Do you want to upload another Item?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                for (int j = 0; j < IMAGE_VIEW_SIZE; j++) {
-                    imageViews[j].setImageResource(R.drawable.add3);
-                    imageChanged[j] = 0;
-                }
-                imageViews[1].setVisibility(View.INVISIBLE);
-                imageViews[2].setVisibility(View.INVISIBLE);
-                etDescription.setText("");
-                etPrice.setText("");
-                etBrand.setText("");
-                checkBoxIvFirst.setChecked(false);
-                checkBoxIvSecond.setChecked(false);
-                checkBoxIvThird.setChecked(false);
-
-
-            }
-        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                finish();
-            }
-        });
-        AlertDialog alertDialog1 = finishUploadAlert.create();
-        alertDialog1.show();
-    }
-
     public void checkBoxEnable() {
         checkBoxIvFirst.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -403,63 +419,6 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
                 }
             }
         });
-    }
-
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
-            Bitmap bitmap = pictureUtility.getPictureFromGallery(data);
-            Bitmap temp = bitmap;
-            switch(num){
-                case 1:
-                        bimaps[num-1] = bitmap;
-                        imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
-                        imageChanged[num - 1] = 1;
-                        imageViews[num].setVisibility(View.VISIBLE);
-                    break;
-                case 2: bimaps[num-1] = bitmap;
-                        imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
-                        imageChanged[num-1] = 1;
-                        imageViews[num].setVisibility(View.VISIBLE);
-                        checkBoxIvSecond.setEnabled(true);
-                    break;
-                case 3: bimaps[num-1] = bitmap;
-                        imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
-                        imageChanged[num-1] = 1;
-                        checkBoxIvThird.setEnabled(true);
-                    break;
-            }
-            num = 0;
-
-        }
-        else if(requestCode == CAPTURE_PHOTO && resultCode == RESULT_OK){
-            SharedPreferences sharedPreferences = getSharedPreferences("URI", MODE_PRIVATE);
-            String s = sharedPreferences.getString("uri", null);
-
-            File f = new File(s);
-            Uri uri = Uri.fromFile(f);
-            int angle = pictureUtility.checkOrientation(uri.getPath());
-            Bitmap bitmap = pictureUtility.shrinkBitmap(uri.getPath(), 500, 500);
-            Bitmap sr = pictureUtility.rotateImage(bitmap, angle);
-            if(imageChanged[0] == 0) {
-                bimaps[0] = sr;
-                imageViews[0].setImageBitmap(pictureUtility.cropCenter(sr));
-                imageViews[1].setVisibility(View.VISIBLE);
-                checkBoxIvSecond.setEnabled(true);
-                imageChanged[0] = 1;
-            }
-            else if(imageChanged[1] == 0) {
-                bimaps[1] = sr;
-                imageViews[1].setImageBitmap(pictureUtility.cropCenter(sr));
-                imageViews[2].setVisibility(View.VISIBLE);
-                checkBoxIvThird.setEnabled(true);
-                imageChanged[1] = 1;
-            }
-            else{
-                bimaps[2] = sr;
-                imageViews[2].setImageBitmap(pictureUtility.cropCenter(sr));
-                imageChanged[2] = 1;
-            }
-        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -527,6 +486,69 @@ public class AddItemActivity extends BaseActivityWithNavigationDrawer implements
         startActivityForResult(i, RESULT_LOAD_IMAGE);
     }
 
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == RESULT_LOAD_IMAGE && resultCode == RESULT_OK && null != data) {
+            getImageFromGallery(data);
+        }
+        else if(requestCode == CAPTURE_PHOTO && resultCode == RESULT_OK){
+            getImageFromCamera();
+        }
+    }
+
+    public void getImageFromGallery(Intent data){
+        Bitmap bitmap = pictureUtility.getPictureFromGallery(data);
+        Bitmap temp = bitmap;
+        switch(num){
+            case 1:
+                bitmaps[num-1] = bitmap;
+                imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
+                imageChanged[num - 1] = 1;
+                imageViews[num].setVisibility(View.VISIBLE);
+                break;
+            case 2: bitmaps[num-1] = bitmap;
+                imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
+                imageChanged[num-1] = 1;
+                imageViews[num].setVisibility(View.VISIBLE);
+                checkBoxIvSecond.setEnabled(true);
+                break;
+            case 3: bitmaps[num-1] = bitmap;
+                imageViews[num-1].setImageBitmap(pictureUtility.cropCenter(temp));
+                imageChanged[num-1] = 1;
+                checkBoxIvThird.setEnabled(true);
+                break;
+        }
+        num = 0;
+    }
+
+    public void getImageFromCamera(){
+        SharedPreferences sharedPreferences = getSharedPreferences("URI", MODE_PRIVATE);
+        String s = sharedPreferences.getString("uri", null);
+
+        File f = new File(s);
+        Uri uri = Uri.fromFile(f);
+        int angle = pictureUtility.checkOrientation(uri.getPath());
+        Bitmap bitmap = pictureUtility.shrinkBitmap(uri.getPath(), 500, 500);
+        Bitmap sr = pictureUtility.rotateImage(bitmap, angle);
+        if(imageChanged[0] == 0) {
+            bitmaps[0] = sr;
+            imageViews[0].setImageBitmap(pictureUtility.cropCenter(sr));
+            imageViews[1].setVisibility(View.VISIBLE);
+            checkBoxIvSecond.setEnabled(true);
+            imageChanged[0] = 1;
+        }
+        else if(imageChanged[1] == 0) {
+            bitmaps[1] = sr;
+            imageViews[1].setImageBitmap(pictureUtility.cropCenter(sr));
+            imageViews[2].setVisibility(View.VISIBLE);
+            checkBoxIvThird.setEnabled(true);
+            imageChanged[1] = 1;
+        }
+        else{
+            bitmaps[2] = sr;
+            imageViews[2].setImageBitmap(pictureUtility.cropCenter(sr));
+            imageChanged[2] = 1;
+        }
+    }
 }
 
 

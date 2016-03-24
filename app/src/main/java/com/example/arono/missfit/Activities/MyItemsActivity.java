@@ -1,15 +1,15 @@
 package com.example.arono.missfit.Activities;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.FrameLayout;
@@ -20,39 +20,64 @@ import android.widget.Toast;
 
 import com.backendless.Backendless;
 import com.backendless.BackendlessUser;
+import com.backendless.async.callback.AsyncCallback;
 import com.backendless.exceptions.BackendlessException;
+import com.backendless.exceptions.BackendlessFault;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 import com.example.arono.missfit.Drawer.BaseActivityWithNavigationDrawer;
 import com.example.arono.missfit.ImageAdapter;
 import com.example.arono.missfit.Item;
-import com.example.arono.missfit.ItemActivity;
 import com.example.arono.missfit.R;
 
 import java.util.ArrayList;
 
 public class MyItemsActivity extends BaseActivityWithNavigationDrawer {
 
-    FrameLayout contentFrame;
-    LayoutInflater inflater;
-    ImageAdapter imageAdapter;
-    RelativeLayout rl;
-    GridView gvItems;
+    private FrameLayout contentFrame;
+    private LayoutInflater inflater;
+    private ImageAdapter imageAdapter;
+    private RelativeLayout rl;
+    private GridView gvItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        initFrameView();
+        splashScreen();
+        initTitle();
+        initialize();
+        loadSpecificItems();
+        setItemListener();
+
+    }
+
+    public void initFrameView(){
         contentFrame = getContentFrame();
         inflater = (LayoutInflater)this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.activity_myitems,null,false);
+        contentFrame.addView(view);
 
-        final View popUp = inflater.inflate(R.layout.pop_up_progress_bar,null,false);
+    }
+
+    public void initialize(){
+        rl = (RelativeLayout)this.findViewById(R.id.rlMyItems);
+        imageAdapter = new ImageAdapter(getApplicationContext());
+        gvItems = new GridView(this);
+        gvItems.setNumColumns(2);
+
+    }
+    public void initTitle(){
+        Intent titleIntent = getIntent();
+        getSupportActionBar().setTitle("YourItems");
+    }
+
+    public void splashScreen(){
+        final View popUp = inflater.inflate(R.layout.pop_up_progress_bar, null, false);
         final ProgressBar progressBar = (ProgressBar) popUp.findViewById(R.id.popUpProgressBar);
         progressBar.setVisibility(View.VISIBLE);
 
-        contentFrame.addView(view);
         contentFrame.addView(popUp);
-
 
         new Handler().postDelayed(new Runnable() {
 
@@ -63,62 +88,79 @@ public class MyItemsActivity extends BaseActivityWithNavigationDrawer {
             }
 
         }, 2000L);
+    }
 
+    public void loadSpecificItems(){
         BackendlessUser user = Backendless.UserService.CurrentUser();
+        new LoadItemsFromSpecificUserAsyncTask(user).execute();
+    }
 
-        new LoadItemsFromSpecificUserAsyncTask(this,user).execute();
-
-        rl = (RelativeLayout)this.findViewById(R.id.rlMyItems);
-        Intent titleIntent = getIntent();
-        String title =  titleIntent.getStringExtra("title");
-        getSupportActionBar().setTitle(title);
-
-        imageAdapter = new ImageAdapter(getApplicationContext());
-        gvItems = new GridView(this);
-        gvItems.setNumColumns(2);
-
+    public void setItemListener(){
         gvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getApplication().getApplicationContext(), ItemActivity.class);
-                startActivity(intent);
+                gvItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        Intent intent = new Intent(getApplicationContext(), ShowItemActivity.class);
+                        BackendlessUser user = imageAdapter.getItem(i).getUser();
+                        Item item = imageAdapter.getItem(i);
+                        intent.putExtra("Description", item.getName());
+                        intent.putExtra("phone", (String) user.getProperty("phone"));
+                        intent.putExtra("brand", item.getBrand());
+                        intent.putExtra("color", item.getColor());
+                        intent.putExtra("size", Item.sizeToString(item.getSize()));
+                        intent.putExtra("type", item.getType());
+                        intent.putExtra("price", String.valueOf(item.getPrice()));
+                        intent.putExtra("photoOne", item.getPhotoOne());
+                        intent.putExtra("photoTwo", item.getPhotoTwo());
+                        intent.putExtra("photoThree", item.getPhotoThird());
+                        startActivity(intent);
+                    }
+                });
             }
         });
-
-
-
-
+        gvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Item itemToDelete = imageAdapter.getItem(i);
+                BackendlessUser user = imageAdapter.getItem(i).getUser();
+                deleteAlert(itemToDelete);
+                return false;
+            }
+        });
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_item, menu);
-        return true;
+
+    public void deleteAlert(final Item itemToDelete){
+        AlertDialog.Builder finishUploadAlert = new AlertDialog.Builder(this);
+        finishUploadAlert.setTitle("Delete Item").setMessage("are you sure?").setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                DataManager dataManager = DataManager.getInstance();
+                dataManager.deleteItemOfSpecificUser(itemToDelete, getApplicationContext());
+                Intent intent = new Intent(getApplicationContext(),MyItemsActivity.class);
+                startActivity(intent);
+
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        AlertDialog alertDialog1 = finishUploadAlert.create();
+        alertDialog1.show();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-
-
-        return super.onOptionsItemSelected(item);
-    }
 class LoadItemsFromSpecificUserAsyncTask extends AsyncTask {
 
     private DataManager dataManager;
-    private Context c;
     private boolean flag = false;
     private BackendlessUser user;
     private ArrayList<Item> itemArrayList;
 
-    public LoadItemsFromSpecificUserAsyncTask(Context c, BackendlessUser user){
-        this.c = c;
+    public LoadItemsFromSpecificUserAsyncTask(BackendlessUser user){
         this.dataManager = DataManager.getInstance();
         this.user = user;
     }
@@ -155,7 +197,6 @@ class LoadItemsFromSpecificUserAsyncTask extends AsyncTask {
             }else
                 Toast.makeText(getApplication().getApplicationContext(),"No Items",Toast.LENGTH_SHORT).show();
         }
-
 
     }
 }

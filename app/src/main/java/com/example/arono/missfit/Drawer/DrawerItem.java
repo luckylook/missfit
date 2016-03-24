@@ -5,8 +5,9 @@ package com.example.arono.missfit.Drawer;
  */
 public class DrawerItem {
 
-    int icon;
-    String name;
+    private int icon;
+    private String name;
+
     public DrawerItem(String name,int icon){
         this.name = name;
         this.icon = icon;

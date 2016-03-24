@@ -18,7 +18,7 @@ public class Item implements Serializable{
     private String name;
     private BackendlessUser user;
     private double price;
-    private String type,brand,color,photoOne,photoTwo,photoThird,phoneNumber;
+    private String type,brand,color,photoOne,photoTwo,photoThird;
     private Size size;
 
 
@@ -117,6 +117,27 @@ public class Item implements Serializable{
                 break;
         }
         return size;
+    }
+
+    public static String sizeToString(Size size){
+        String string = null;
+        switch(size){
+            case XXS: string = "XXS";
+                break;
+            case XS: string = "XS";
+                break;
+            case SMALL: string = "SMALL";
+                break;
+            case MEDIUM: string = "MEDIUM";
+                break;
+            case LARGE: string = "LARGE";
+                break;
+            case XL: string = "XL";
+                break;
+            case XXL: string = "XXL";
+                break;
+        }
+        return string;
     }
 
     public void setSize(Size size){

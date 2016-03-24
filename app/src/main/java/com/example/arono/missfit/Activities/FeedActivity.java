@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,7 +24,7 @@ import android.widget.SearchView;
 import com.backendless.exceptions.BackendlessException;
 import com.example.arono.missfit.DataServerManagement.DataManager;
 import com.example.arono.missfit.Drawer.BaseActivityWithNavigationDrawer;
-import com.example.arono.missfit.FragmentCategory;
+import com.example.arono.missfit.TabAdapter;
 import com.example.arono.missfit.ImageAdapter;
 import com.example.arono.missfit.Item;
 import com.example.arono.missfit.R;
@@ -42,27 +40,45 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
     public static final String BOTTOMS = "BOTTOMS";
     public static final String SHOES = "SHOES";
     public static final String CUSTOM = "CUSTOM";
-    ViewPager viewPager = null;
-    TabAdapter tabAdapter;
-    SlidingTabLayout tabs;
-    SearchView searchView;
-    ImageAdapter[] imageAdapter;
-    FrameLayout contentFrame;
-    LayoutInflater inflater;
-    View popUp ;
-    ProgressBar progressBar;
+
+    private ViewPager viewPager = null;
+    private TabAdapter tabAdapter;
+    private SlidingTabLayout tabs;
+    private SearchView searchView;
+    private ImageAdapter[] imageAdapter;
+    private FrameLayout contentFrame;
+    private LayoutInflater inflater;
+    private View popUp ;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
 
+        initFrameView();
+        initialize();
+        splashScreen();
+
+        Log.e("FeedActivity", "FeedActivity");
+
+
+    }
+
+    /**
+     * load the xml file(layout)
+     */
+    public void initFrameView(){
         contentFrame = getContentFrame();
         inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-
         View view = inflater.inflate(R.layout.activity_feed, null, false);
         contentFrame.addView(view);
+    }
 
+    /**
+     * init all variable
+     */
+    public void initialize(){
         imageAdapter = new ImageAdapter[SIZE];
         for (int i = 0; i < SIZE; i++)
             imageAdapter[i] = new ImageAdapter(getApplicationContext());
@@ -71,8 +87,9 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
         FragmentManager fm = getSupportFragmentManager();
         tabAdapter = new TabAdapter(fm, imageAdapter);
         tabs = (SlidingTabLayout) findViewById(R.id.tabs);
+    }
 
-
+    public void splashScreen(){
         Intent intent = getIntent();
         boolean flag = intent.getBooleanExtra("STOP", false);
         if (!flag) {
@@ -81,19 +98,10 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
             contentFrame.addView(popUp);
 
             getSupportActionBar().hide();
-            LoadAllItemAsyncTask s = new LoadAllItemAsyncTask(getApplication().getApplicationContext(), progressBar);
+            LoadAllItemAsyncTask s = new LoadAllItemAsyncTask(progressBar);
             s.setListener(this);
             s.execute();
-            /*itemArrayList = (ArrayList<Item>) getIntent().getSerializableExtra("itemArray");
 
-            dataManager.setItems(itemArrayList);
-            dataManager.orderingItemsByCategory(dataManager.getItems());
-
-
-            viewPager.setAdapter(tabAdapter);
-
-            tabs.setViewPager(viewPager);*/
-            Log.e("Error", "dasddHere");
         } else {
             final View popUp = inflater.inflate(R.layout.pop_up_progress_bar, null, false);
             final ProgressBar progressBar = (ProgressBar) popUp.findViewById(R.id.popUpProgressBar);
@@ -109,16 +117,13 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
                 }
 
             }, 2000L);
+
             getSupportActionBar().show();
-            LoadAllItemAsyncTask s = new LoadAllItemAsyncTask(getApplication().getApplicationContext(), progressBar);
+            LoadAllItemAsyncTask s = new LoadAllItemAsyncTask(progressBar);
             s.execute();
-            Log.e("Error", "Aftercgvcv");
+
         }
-        Log.e("FeedActivity", "FeedActivity");
-
-
     }
-
     private void removeSplashScreen() {
         progressBar.setVisibility(View.INVISIBLE);
         contentFrame.removeView(popUp);
@@ -147,7 +152,7 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                viewPager.setCurrentItem(FeedActivity.SIZE-1);
+                viewPager.setCurrentItem(FeedActivity.SIZE - 1);
                 imageAdapter[3].getFilter().filter(newText);
                 return false;
             }
@@ -164,7 +169,7 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
 
         //noinspection SimplifiableIfStatement
 
-            if (id == R.id.filterID) {
+            /*if (id == R.id.filterID) {
                 ListPopupWindow listPopupWindow = new ListPopupWindow(this);
                 listPopupWindow.setModal(true);
 
@@ -182,43 +187,42 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
                         break;
                 }
 
+                createPopUpWindow(listPopupWindow,strings);
 
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.filter_item, strings);
-
-                // listPopupWindow.setListSelector(getResources().getDrawable(R.drawable.btn_borderless));
-                listPopupWindow.setAdapter(adapter);
-                listPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                        CheckedTextView checkedTextView = (CheckedTextView) view;
-                        if (checkedTextView.isChecked())
-                            checkedTextView.setChecked(false);
-                        else
-                            checkedTextView.setChecked(true);
-                    }
-                });
-                listPopupWindow.setAnchorView(findViewById(R.id.filterID));
-                listPopupWindow.setWidth(450);
-                listPopupWindow.show();
-            }
-
+            }*/
 
         return super.onOptionsItemSelected(item);
     }
+/*    public void createPopUpWindow(ListPopupWindow listPopupWindow,String[] strings){
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.filter_item, strings);
 
-    class LoadAllItemAsyncTask extends AsyncTask {
+        listPopupWindow.setAdapter(adapter);
+        listPopupWindow.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                CheckedTextView checkedTextView = (CheckedTextView) view;
+                if (checkedTextView.isChecked())
+                    checkedTextView.setChecked(false);
+                else
+                    checkedTextView.setChecked(true);
+            }
+        });
+        listPopupWindow.setAnchorView(findViewById(R.id.filterID));
+        listPopupWindow.setWidth(450);
+        listPopupWindow.show();
+    }*/
+
+class LoadAllItemAsyncTask extends AsyncTask {
 
     private FetchDataListener fetchListener;
 
     private ProgressBar progressBar;
     private DataManager dataManager;
-    private Context c;
     private boolean flag = false;
     private ArrayList<Item> itemArrayList;
 
 
-    public LoadAllItemAsyncTask(Context c, ProgressBar progressBar){
-        this.c = c;
+    public LoadAllItemAsyncTask(ProgressBar progressBar){
         this.progressBar = progressBar;
         this.dataManager = DataManager.getInstance();
         progressBar.setVisibility(View.VISIBLE);
@@ -265,41 +269,7 @@ public class FeedActivity extends BaseActivityWithNavigationDrawer implements Fe
     }
 }
 
-class TabAdapter extends FragmentStatePagerAdapter {
 
-
-    FragmentCategory fragmentCategory;
-    ImageAdapter[] im;
-    DataManager dataManager;
-
-    public TabAdapter(FragmentManager fm,ImageAdapter[] imageAdapter) {
-        super(fm);
-        im = imageAdapter;
-        this.dataManager = DataManager.getInstance();
-    }
-
-    @Override
-    public Fragment getItem(int position) {
-        fragmentCategory = FragmentCategory.getInstance(position, im[position]);
-        return fragmentCategory;
-    }
-
-    @Override
-    public int getCount() {
-        return FeedActivity.SIZE;
-    }
-
-    @Override
-    public CharSequence getPageTitle(int position) {
-        switch(position){
-            case 0: return FeedActivity.TOPS;
-            case 1: return FeedActivity.BOTTOMS;
-            case 2: return FeedActivity.SHOES;
-            case 3: return FeedActivity.CUSTOM;
-        }
-        return null;
-    }
-}
 
 
 

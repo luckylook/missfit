@@ -31,14 +31,11 @@ import java.util.ArrayList;
 public class DataManager {
 
     public final static String PICTURE_URL ="https://api.backendless.com/"+BackendUtility.APPLIATION_ID+"/"+BackendUtility.VERSION+"/files/"+"mypics/";
+
     private static DataManager dataManager;
-    ArrayList<Item> items;
-    ArrayList<Item> itemsTops,itemsBottoms,itemShoes,itemsCustom;
+    private ArrayList<Item> items;
+    private ArrayList<Item> itemsTops,itemsBottoms,itemShoes,itemsCustom;
 
-   /* public DataManager(){
-
-    }
-*/
     public static DataManager getInstance(){
         if(dataManager == null){
             dataManager = new DataManager();
@@ -64,8 +61,6 @@ public class DataManager {
 
     public String uploadPictureToTheServer(Bitmap photo, int id, String name){
         String url = "";
-
-        //Bitmap photo = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
 
         Backendless.Files.Android.upload(photo, Bitmap.CompressFormat.PNG, 100, name+id+".png", "mypics", new AsyncCallback<BackendlessFile>()
         {
@@ -140,7 +135,7 @@ public class DataManager {
             @Override
             public void onSuccess() {
                 progressBar.setVisibility(View.INVISIBLE);
-                Bitmap src = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+                Bitmap src = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
                 PictureUtility pictureUtility = new PictureUtility(context);
                 imageView.setImageBitmap(pictureUtility.cropCenter(src));
             }
@@ -152,14 +147,32 @@ public class DataManager {
         });
     }
 
-    public void setItems(ArrayList<Item> items){
-        this.items = items;
-    }
-    public ArrayList<Item> getItems(){
-        return items;
+    /**
+     * delete specific item
+     * @param itemToDelete the item that you want to delete.
+     * @param context for the message that you want to transfer.
+     */
+    public void deleteItemOfSpecificUser(Item itemToDelete, final Context context){
+        Backendless.Persistence.of(Item.class).remove(itemToDelete, new AsyncCallback<Long>() {
+            @Override
+            public void handleResponse(Long response) {
+                Toast.makeText(context, "Item Has been Deleted", Toast.LENGTH_SHORT).show();
+                Log.e("Error", "work");
+            }
+
+            @Override
+            public void handleFault(BackendlessFault fault) {
+                Log.e("Error", fault.getMessage());
+            }
+        });
     }
 
 
+
+    /**
+     *
+     * @param itemsArray ordering all items by category
+     */
     public void orderingItemsByCategory(ArrayList<Item> itemsArray){
         itemsTops = new ArrayList<>();
         itemsBottoms = new ArrayList<>();
@@ -206,6 +219,12 @@ public class DataManager {
     }
     public ArrayList<Item> getItemShoes(){
         return itemShoes;
+    }
+    public void setItems(ArrayList<Item> items){
+        this.items = items;
+    }
+    public ArrayList<Item> getItems(){
+        return items;
     }
 
 }
